@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "blog"
+version = "0.1.0"
+description = ""
+authors = ["Mirzomumin <mirzomumin@list.ru>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+django = "^5.0.2"
+pre-commit = "^3.6.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
