@@ -11,9 +11,15 @@ def post_list(request):
     return render(request, "blog/post/list.html", context)
 
 
-def post_detail(request, id):
+def post_detail(request, year, month, day, post):
     try:
-        post = Post.objects.get(id=id, status=Post.Status.PUBLISHED)
+        post = Post.objects.get(
+            status=Post.Status.PUBLISHED,
+            slug=post,
+            published_at__year=year,
+            published_at__month=month,
+            published_at__day=day,
+        )
     except Post.DoesNotExist:
         raise Http404("No Post found.")
 

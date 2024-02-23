@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.urls import reverse
 from django.utils import timezone
 
 User = get_user_model()
@@ -13,7 +14,7 @@ class Post(models.Model):
         PUBLISHED = 1, "Published"
 
     title = models.CharField(max_length=250)
-    slug = models.SlugField(max_length=250)
+    slug = models.SlugField(max_length=250, unique_for_date="published_at")
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="posts")
     body = models.TextField()
     status = models.SmallIntegerField(choices=Status.choices, default=Status.DRAFT)
@@ -29,3 +30,14 @@ class Post(models.Model):
 
     def __str__(self) -> str:
         return self.title
+
+    def get_absolute_url(self):
+        return reverse(
+            "blog:post_detail",
+            args=[
+                self.published_at.year,
+                self.published_at.month,
+                self.published_at.day,
+                self.slug,
+            ],
+        )
