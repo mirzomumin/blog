@@ -1,4 +1,5 @@
 # Create your views here.
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.http import Http404
 from django.shortcuts import render
 
@@ -6,7 +7,19 @@ from blog.models import Post
 
 
 def post_list(request):
-    posts = Post.objects.filter(status=Post.Status.PUBLISHED)
+    post_list = Post.objects.filter(status=Post.Status.PUBLISHED)
+
+    # Pagination with 3 posts per page
+    paginator = Paginator(post_list, 3)
+    page_number = request.GET.get("page", 1)
+    try:
+        posts = paginator.page(page_number)
+    except PageNotAnInteger:
+        posts = paginator.page(1)
+    except EmptyPage:
+        # If page_number is out of range deliver last page of results
+        posts = paginator.page(paginator.num_pages)
+
     context = {"posts": posts}
     return render(request, "blog/post/list.html", context)
 
