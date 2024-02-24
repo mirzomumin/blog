@@ -1,8 +1,11 @@
 # Create your views here.
+from django.conf import settings
+from django.core.mail import send_mail
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.http import Http404
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 
+from blog.forms import EmailPostForm
 from blog.models import Post
 
 
@@ -38,3 +41,40 @@ def post_detail(request, year, month, day, post):
 
     context = {"post": post}
     return render(request, "blog/post/detail.html", context)
+
+
+def post_share(request, year, month, day, post):
+    post = get_object_or_404(
+        Post,
+        status=Post.Status.PUBLISHED,
+        slug=post,
+        published_at__year=year,
+        published_at__month=month,
+        published_at__day=day,
+    )
+    is_sent = False
+
+    if request.method == "POST":
+        form = EmailPostForm(request.POST)
+        if form.is_valid():
+            cleaned_data = form.cleaned_data
+            post_url = request.build_absolute_uri(post.get_absolute_url())
+            subject = f'{cleaned_data["name"]} recommends you read {post.title}'
+            message = (
+                f'Read {post.title} at {post_url}\n\n'
+                f'{cleaned_data["name"]}\'s comments: {cleaned_data["comments"]}'
+            )
+            response = send_mail(
+                subject,
+                message,
+                settings.EMAIL_HOST_USER,
+                [cleaned_data["to"]],
+                fail_silently=False,
+            )
+            is_sent = bool(response)
+
+    else:
+        form = EmailPostForm()
+
+    context = {"post": post, "form": form, "is_sent": is_sent}
+    return render(request, "blog/post/share.html", context)
