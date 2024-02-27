@@ -1,6 +1,6 @@
 from django.urls import path
 
-from blog.views import post_detail, post_list, post_share
+from blog.views import post_comment, post_detail, post_list, post_share
 
 app_name = "blog"
 
@@ -15,5 +15,10 @@ urlpatterns = [
         "<int:year>/<int:month>/<int:day>/<slug:post>/share/",
         post_share,
         name="post_share",
+    ),
+    path(
+        "<int:year>/<int:month>/<int:day>/<slug:post>/comment/",
+        post_comment,
+        name="post_comment",
     ),
 ]

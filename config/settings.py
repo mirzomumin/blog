@@ -44,9 +44,12 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # My apps
     "blog.apps.BlogConfig",
+    # Third part apps
+    "query_counter",
 ]
 
 MIDDLEWARE = [
+    "query_counter.middleware.DjangoQueryCounterMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
