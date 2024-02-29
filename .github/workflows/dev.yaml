@@ -1,0 +1,52 @@
+name: check-code-style
+
+on:
+  # Trigger the workflow on pull request,
+  # but only for the dev branch
+  pull_request:
+    branches:
+      - dev
+  pull_request_review:
+    branches:
+      - dev
+    types:
+      - submitted
+
+
+jobs:
+  check-code:
+    name: Check python code style
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out git repository
+        uses: actions/checkout@v4
+
+      - name: Set up python3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependancy manager
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          export PATH="/home/runner/.local/bin"
+          poetry config virtualenvs.create false && \
+          poetry add isort ruff
+
+      - name: Run linters
+        run: |
+          isort . --check-only
+          ruff check .
+
+  automerge:
+    runs-on: ubuntu-latest
+    needs: check-code
+    steps:
+      - id: automerge
+        name: automerge
+        uses: "pascalgn/automerge-action@v0.16.2"
+        env:
+          MERGE_LABELS: ""
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          MERGE_REQUIRED_APPROVALS: "1"
