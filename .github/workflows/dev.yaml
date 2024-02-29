@@ -6,6 +6,11 @@ on:
   pull_request:
     branches:
       - dev
+  pull_request_review:
+    branches:
+      - dev
+    types:
+      - submitted
 
 
 jobs:
