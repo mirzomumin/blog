@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "blog.apps.BlogConfig",
     # Third part apps
     "query_counter",
+    "taggit",
 ]
 
 MIDDLEWARE = [
