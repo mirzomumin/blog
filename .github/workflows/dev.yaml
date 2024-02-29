@@ -35,7 +35,7 @@ jobs:
           ruff check .
 
   automerge:
-    runs-on: ubuntu-lates
+    runs-on: ubuntu-latest
     needs: check-code
     steps:
       - id: automerge
