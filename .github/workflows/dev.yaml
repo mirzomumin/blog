@@ -31,7 +31,7 @@ jobs:
 
       - name: Run linters
         run: |
-          isort --check-only
+          isort . --check-only
           ruff check .
 
   automerge:
