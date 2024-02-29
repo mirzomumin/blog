@@ -43,8 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: check-code
     steps:
-      - id: automerge
-        name: automerge
+      - name: automerge
         uses: "pascalgn/automerge-action@v0.16.2"
         env:
           MERGE_LABELS: ""
