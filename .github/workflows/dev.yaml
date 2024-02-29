@@ -33,3 +33,16 @@ jobs:
         run: |
           isort --check-only
           ruff check .
+
+  automerge:
+    if: ${{ always() }}
+    needs: check-code
+    runs-on: ubuntu-lates
+    steps:
+      - id: automerge
+        name: automerge
+        uses: "pascalgn/automerge-action@v0.16.2"
+        env:
+          MERGE_LABELS: ""
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          MERGE_REQUIRED_APPROVALS: "1"
