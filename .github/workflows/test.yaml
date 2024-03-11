@@ -54,9 +54,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: create-pr
     services:
-      redis:
-        image: redis
-
       postgres:
         image: postgres:14
         env:
