@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.utils.text import slugify
 
 from blog.models import Comment, Post
 
@@ -12,7 +13,7 @@ def create_post(
     status: str = Post.Status.PUBLISHED,
     tags: list[str] = ["IT"],
 ) -> Post:  # type: ignore
-    slug = "-".join(title.lower().split())
+    slug = slugify(title)
     post = Post.objects.create(
         title=title,
         slug=slug,
