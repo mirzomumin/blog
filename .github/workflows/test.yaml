@@ -1,0 +1,136 @@
+name: run-tests
+
+on:
+  # Trigger the workflow on pull request,
+  # but only for the test branch
+  pull_request:
+    branches:
+      - dev
+    types:
+      - closed
+
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+jobs:
+  create-pr:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Retrieve PR url
+        run: |
+          echo "PR_URL=$(gh pr view dev --json url | grep -Po '(?<="url":")[^"\\]*(?:\\.[^"\\]*)*')" >> $GITHUB_ENV
+
+      - name: Check if PR already exists
+        id: check-pr-exists
+        run: |
+          prs=$(gh pr list -B test -H dev)
+          # Even when there are no PRs, this array always seems to have 1 result
+          echo Size of PRS ARRAY: ${#prs[@]}
+          # Locally, it seems the gh cli says 'no pull requests match your search..' but not here.
+          # The first element exists but is of length 0
+          echo Length of PRS[0] string: ${#prs[0]}
+
+          if ((${#prs[@]} > 0 && ${#prs[0]} != 0 )); then
+            echo skipping PR creation
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create Pull Request
+        if: '!steps.check-pr-exists.outputs.skip'
+        run: |
+          gh pr create \
+          -B test \
+          -H dev \
+          --title 'Merge dev into test' \
+          --body "${{ env.PR_URL }}"
+
+  test:
+    name: Test dev PR code
+    runs-on: ubuntu-latest
+    needs: create-pr
+    services:
+      redis:
+        image: redis
+
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev
+
+      - name: Set up python3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        working-directory: ./backend
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          export PATH="${PATH}:/root/.local/bin"
+          poetry config virtualenvs.create false && \
+          poetry install --no-root
+
+      - name: Test with pytest
+        working-directory: ./backend
+        id: test
+        run: |
+            pytest -s -v
+        env:
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          DEBUG: ${{ secrets.DEBUG }}
+          ALLOWED_HOSTS: ${{ secrets.ALLOWED_HOSTS }}
+          CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          CHANNEL_HOST: ${{ secrets.CHANNEL_HOST }}
+          CHANNEL_PORT: ${{ secrets.CHANNEL_PORT }}
+
+      - name: Get Pull Request Number
+        run: echo "PR_NUMBER=$(gh pr view dev --json number -q .number || echo "")" >> $GITHUB_ENV
+
+      - name: automerge
+        id: automerge
+        uses: "pascalgn/automerge-action@v0.16.2"
+        env:
+          MERGE_LABELS: ""
+          PULL_REQUEST: "${{ env.PR_NUMBER }}"
+
+      - name: Retrieve PR url
+        # Return pr url from dev branch
+        run: |
+          echo "PR_URL=$(gh pr view dev --json url | grep -Po '(?<="url":")[^"\\]*(?:\\.[^"\\]*)*')" >> $GITHUB_ENV
+
+      - name: Create PR if it does not exist
+        id: check
+        run: |
+          # Get PRs count
+          prs=$(gh pr list \
+            --repo "$GITHUB_REPOSITORY" \
+            --head 'test' \
+            --base 'main' \
+            --json title \
+            --jq 'length')
+
+          if ((prs == 0)); then
+                gh pr create -B main -H test \
+                 --title 'Merge test into main' \
+                 --body "${{ env.PR_URL }}" \
+                 -r 'mirzomumin98'
+          fi
