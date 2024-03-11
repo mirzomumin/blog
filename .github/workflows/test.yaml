@@ -8,6 +8,11 @@ on:
       - closed
     branches:
       - dev
+  pull_request_review:
+    branches:
+      - dev
+    types:
+      - submitted
 
 
 env:
