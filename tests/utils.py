@@ -9,7 +9,7 @@ User = get_user_model()
 def create_post(
     title: str,
     body: str,
-    user: User,
+    user: User,  # type: ignore
     status: str = Post.Status.PUBLISHED,
     tags: list[str] = ["IT"],
 ) -> Post:  # type: ignore
