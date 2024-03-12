@@ -2,17 +2,16 @@ name: run-tests
 
 on:
   # Trigger the workflow on pull request,
-  # but only for the test branch
+  # but only for the dev branch
+  # pull_request_review:
+  #   types:
+  #     - submitted
+  #   branches:
+  #     - dev
   pull_request:
     types:
+      - auto_merge_enabled
       - closed
-    branches:
-      - dev
-  pull_request_review:
-    branches:
-      - dev
-    types:
-      - submitted
 
 
 env:
@@ -22,6 +21,7 @@ env:
 jobs:
   create-pr:
     if: github.event.pull_request.merged == true
+    # if: github.event.review.state == 'APPROVED'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
