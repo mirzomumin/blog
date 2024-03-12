@@ -8,7 +8,9 @@ on:
   #     - submitted
   #   branches:
   #     - dev
-  push:
+  pull_request:
+    types:
+      - auto_merge_enabled
     branches:
       - dev
 
