@@ -8,12 +8,9 @@ on:
   #     - submitted
   #   branches:
   #     - dev
-  pull_request:
+  push:
     branches:
       - dev
-    types:
-      - auto_merge_enabled
-      - closed
 
 
 env:
@@ -22,7 +19,7 @@ env:
 
 jobs:
   create-pr:
-    if: github.event.pull_request.merged == true
+    # if: github.event.pull_request.merged == true
     # if: github.event.review.state == 'APPROVED'
     runs-on: ubuntu-latest
     steps:
