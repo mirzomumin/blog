@@ -81,7 +81,6 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        working-directory: ./backend
         run: |
           curl -sSL https://install.python-poetry.org | python3 -
           export PATH="${PATH}:/root/.local/bin"
@@ -89,7 +88,6 @@ jobs:
           poetry install --no-root
 
       - name: Test with pytest
-        working-directory: ./backend
         id: test
         run: |
             pytest -s -v
