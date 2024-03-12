@@ -9,6 +9,8 @@ on:
   #   branches:
   #     - dev
   pull_request:
+    branches:
+      - dev
     types:
       - auto_merge_enabled
       - closed
