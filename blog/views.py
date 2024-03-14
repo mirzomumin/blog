@@ -13,7 +13,7 @@ from blog.models import Post
 
 
 def post_list(request, tag_slug=None):
-    post_list = Post.objects.filter(status=Post.Status.PUBLISHED)
+    post_list = Post.objects.published()
     tag = None
     if tag_slug:
         tag = get_object_or_404(Tag, slug=tag_slug)
@@ -51,7 +51,7 @@ def post_detail(request, year, month, day, post):
 
     post_tags_ids = post.tags.values_list("id", flat=True)
     similar_posts = (
-        Post.objects.filter(status=Post.Status.PUBLISHED, tags__in=post_tags_ids)
+        Post.objects.published(tags__in=post_tags_ids)
         .exclude(id=post.id)
         .annotate(same_tags=Count("tags"))
         .order_by(

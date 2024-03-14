@@ -4,6 +4,8 @@ from django.urls import reverse
 from django.utils import timezone
 from taggit.managers import TaggableManager
 
+from blog.managers import PostManager
+
 User = get_user_model()
 
 # Create your models here.
@@ -23,6 +25,8 @@ class Post(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     tags = TaggableManager()
+
+    objects = PostManager()
 
     class Meta:
         ordering = ["-published_at"]
