@@ -1,5 +1,6 @@
 # Create your views here.
 from django.conf import settings
+from django.contrib.postgres.search import TrigramSimilarity
 from django.core.mail import send_mail
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Count
@@ -8,8 +9,31 @@ from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_POST
 from taggit.models import Tag
 
-from blog.forms import CommentForm, EmailPostForm
+from blog.forms import CommentForm, EmailPostForm, SearchForm
 from blog.models import Post
+
+
+def post_search(request):
+    form = SearchForm()
+    query = None
+    results = []
+
+    if "query" not in request.GET:
+        context = {"form": form, "query": query, "results": results}
+        return render(request, "blog/post/search.html", context)
+
+    form = SearchForm(request.GET)
+    if form.is_valid():
+        query = form.cleaned_data["query"]
+        results = (
+            Post.objects.published()
+            .annotate(similarity=TrigramSimilarity("title", query))
+            .filter(similarity__gt=0.1)
+            .order_by("-similarity")
+        )
+
+    context = {"form": form, "query": query, "results": results}
+    return render(request, "blog/post/search.html", context)
 
 
 def post_list(request, tag_slug=None):
