@@ -53,6 +53,14 @@ pip install -r requirements.txt
 
 For next steps follow the instruction above (Launch project with `poetry` package manager) begining from 4th step.
 
+## Launch project with `docker`
+
+Make sure that docker is installed in your machine and enter the command bellow:
+
+```shell
+docker compose up --build
+```
+
 
 ## Run tests
 
