@@ -1,6 +1,6 @@
 # Create your views here.
 from django.conf import settings
-from django.contrib.postgres.search import SearchVector
+from django.contrib.postgres.search import TrigramSimilarity
 from django.core.mail import send_mail
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Count
@@ -27,10 +27,9 @@ def post_search(request):
         query = form.cleaned_data["query"]
         results = (
             Post.objects.published()
-            .annotate(
-                search=SearchVector("title", "body"),
-            )
-            .filter(search=query)
+            .annotate(similarity=TrigramSimilarity("title", query))
+            .filter(similarity__gt=0.1)
+            .order_by("-similarity")
         )
 
     context = {"form": form, "query": query, "results": results}
