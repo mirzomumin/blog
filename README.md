@@ -58,7 +58,7 @@ For next steps follow the instruction above (Launch project with `poetry` packag
 Make sure that docker is installed in your machine and enter the command bellow:
 
 ```shell
-docker compose up --build
+docker compose up --build -d
 ```
 
 
